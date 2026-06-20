@@ -5,6 +5,7 @@ from openai import OpenAI
 from dotenv import load_dotenv
 import json
 import os
+from cloudwatch_client import fetch_cloudwatch_logs
 
 load_dotenv()
 
@@ -170,5 +171,13 @@ Return only JSON.
         except json.JSONDecodeError:
             return {"technical": full_text, "non_technical": "", "warning": "Non-JSON output"}
 
+    except Exception as e:
+        return {"error": str(e)}
+    
+@app.get("/api/fetch-cloudwatch-logs")
+def fetch_cloudwatch(log_group: str = "/digitide/postmortem-demo", hours: int = 24):
+    try:
+        events = fetch_cloudwatch_logs(log_group, hours_back=hours)
+        return {"events": events}
     except Exception as e:
         return {"error": str(e)}

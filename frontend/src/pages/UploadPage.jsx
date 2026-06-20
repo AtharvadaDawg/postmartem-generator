@@ -4,6 +4,8 @@ function UploadPage({ onLogsLoaded }) {
   const [activeTab, setActiveTab] = useState('paste')
   const [pasteValue, setPasteValue] = useState('')
   const [scenario, setScenario] = useState('payment_outage')
+  const [logGroup, setLogGroup] = useState('/digitide/postmortem-demo')
+  const [hoursBack, setHoursBack] = useState(24)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -73,6 +75,25 @@ function UploadPage({ onLogsLoaded }) {
     setLoading(false)
   }
 
+  const handleCloudWatchFetch = async () => {
+    setLoading(true)
+    setError('')
+    try {
+      const res = await fetch(`/api/fetch-cloudwatch-logs?log_group=${encodeURIComponent(logGroup)}&hours=${hoursBack}`)
+      const data = await res.json()
+      if (data.error) {
+        setError(data.error)
+      } else if (data.events.length === 0) {
+        setError('No events found in this time window. Try increasing the hours.')
+      } else {
+        onLogsLoaded(data.events)
+      }
+    } catch (e) {
+      setError('Failed to fetch from CloudWatch.')
+    }
+    setLoading(false)
+  }
+
   return (
     <div style={{ maxWidth: '720px', margin: '4rem auto', padding: '0 1.5rem', fontFamily: 'sans-serif' }}>
       <h1 style={{ fontSize: '28px', fontWeight: '700', color: '#0D1B2A', marginBottom: '0.25rem' }}>
@@ -87,6 +108,7 @@ function UploadPage({ onLogsLoaded }) {
         <button style={tabStyle('paste')} onClick={() => setActiveTab('paste')}>Paste JSON</button>
         <button style={tabStyle('file')} onClick={() => setActiveTab('file')}>Upload File</button>
         <button style={tabStyle('sample')} onClick={() => setActiveTab('sample')}>Load Sample</button>
+        <button style={tabStyle('cloudwatch')} onClick={() => setActiveTab('cloudwatch')}>CloudWatch</button>
       </div>
 
       {/* Paste tab */}
@@ -166,6 +188,57 @@ function UploadPage({ onLogsLoaded }) {
             }}
           >
             {loading ? 'Loading...' : 'Load Sample Incident →'}
+          </button>
+        </div>
+      )}
+
+      {/* CloudWatch tab */}
+      {activeTab === 'cloudwatch' && (
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
+          <p style={{ color: '#64748B', marginBottom: '1.5rem' }}>
+            Fetch live logs directly from AWS CloudWatch.
+          </p>
+
+          <div style={{ textAlign: 'left', maxWidth: '420px', margin: '0 auto' }}>
+            <label style={{ fontSize: '12px', color: '#475569', fontWeight: '600' }}>Log Group</label>
+            <input
+              type="text"
+              value={logGroup}
+              onChange={e => setLogGroup(e.target.value)}
+              style={{
+                width: '100%', padding: '0.5rem', marginTop: '0.25rem', marginBottom: '1rem',
+                borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '13px',
+                fontFamily: 'monospace', boxSizing: 'border-box'
+              }}
+            />
+
+            <label style={{ fontSize: '12px', color: '#475569', fontWeight: '600' }}>Time Window</label>
+            <select
+              value={hoursBack}
+              onChange={e => setHoursBack(Number(e.target.value))}
+              style={{
+                width: '100%', padding: '0.5rem', marginTop: '0.25rem', marginBottom: '1.5rem',
+                borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '13px',
+                boxSizing: 'border-box'
+              }}
+            >
+              <option value={1}>Last 1 hour</option>
+              <option value={6}>Last 6 hours</option>
+              <option value={24}>Last 24 hours</option>
+              <option value={168}>Last 7 days</option>
+            </select>
+          </div>
+
+          <button
+            onClick={handleCloudWatchFetch}
+            disabled={loading}
+            style={{
+              padding: '0.6rem 1.5rem',
+              background: '#0D9488', color: 'white', border: 'none',
+              borderRadius: '6px', cursor: 'pointer', fontWeight: '600'
+            }}
+          >
+            {loading ? 'Fetching...' : 'Fetch from CloudWatch →'}
           </button>
         </div>
       )}
