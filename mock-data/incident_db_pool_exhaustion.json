@@ -1,1 +1,60 @@
-{"logEvents": []}
+{
+  "logEvents": [
+    {
+      "timestamp": 1700100000000,
+      "message": "{\"level\": \"INFO\", \"service\": \"OrderService\", \"message\": \"Black Friday traffic spike detected: 4200 req/min\"}"
+    },
+    {
+      "timestamp": 1700100015000,
+      "message": "{\"level\": \"INFO\", \"service\": \"OrderService\", \"message\": \"Auto-scaling triggered: adding 3 instances\"}"
+    },
+    {
+      "timestamp": 1700100045000,
+      "message": "{\"level\": \"WARN\", \"service\": \"DatabaseService\", \"message\": \"Connection pool usage at 78/100\"}"
+    },
+    {
+      "timestamp": 1700100070000,
+      "message": "{\"level\": \"WARN\", \"service\": \"DatabaseService\", \"message\": \"Connection pool usage at 91/100\"}"
+    },
+    {
+      "timestamp": 1700100090000,
+      "message": "{\"level\": \"ERROR\", \"service\": \"DatabaseService\", \"message\": \"Connection pool exhausted: 100/100 connections active\"}"
+    },
+    {
+      "timestamp": 1700100092000,
+      "message": "{\"level\": \"ERROR\", \"service\": \"OrderService\", \"message\": \"Failed to acquire DB connection: timeout after 5000ms\"}"
+    },
+    {
+      "timestamp": 1700100095000,
+      "message": "{\"level\": \"ERROR\", \"service\": \"OrderService\", \"message\": \"Failed to acquire DB connection: timeout after 5000ms\"}"
+    },
+    {
+      "timestamp": 1700100100000,
+      "message": "{\"level\": \"ERROR\", \"service\": \"InventoryService\", \"message\": \"Failed to acquire DB connection: timeout after 5000ms\"}"
+    },
+    {
+      "timestamp": 1700100110000,
+      "message": "{\"level\": \"FATAL\", \"service\": \"OrderService\", \"message\": \"Order processing halted: database unreachable\"}"
+    },
+    {
+      "timestamp": 1700100115000,
+      "message": "{\"level\": \"ERROR\", \"service\": \"AlertService\", \"message\": \"PagerDuty alert triggered: SEV1 \\u2014 checkout outage\"}"
+    },
+    {
+      "timestamp": 1700100180000,
+      "message": "{\"level\": \"INFO\", \"service\": \"DatabaseService\", \"message\": \"On-call engineer manually killed 40 idle connections\"}"
+    },
+    {
+      "timestamp": 1700100195000,
+      "message": "{\"level\": \"INFO\", \"service\": \"DatabaseService\", \"message\": \"Connection pool usage at 52/100\"}"
+    },
+    {
+      "timestamp": 1700100210000,
+      "message": "{\"level\": \"INFO\", \"service\": \"OrderService\", \"message\": \"Database connections restored, order processing resumed\"}"
+    },
+    {
+      "timestamp": 1700100240000,
+      "message": "{\"level\": \"INFO\", \"service\": \"OrderService\", \"message\": \"Health check PASSED \\u2014 service recovered\"}"
+    }
+  ]
+}

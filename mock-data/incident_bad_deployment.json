@@ -1,1 +1,56 @@
-{"logEvents": []}
+{
+  "logEvents": [
+    {
+      "timestamp": 1700200000000,
+      "message": "{\"level\": \"INFO\", \"service\": \"DeployService\", \"message\": \"Deployment started: auth-service v2.14.0\"}"
+    },
+    {
+      "timestamp": 1700200030000,
+      "message": "{\"level\": \"INFO\", \"service\": \"DeployService\", \"message\": \"Config change applied: JWT_SECRET_ROTATION_ENABLED=true\"}"
+    },
+    {
+      "timestamp": 1700200045000,
+      "message": "{\"level\": \"INFO\", \"service\": \"DeployService\", \"message\": \"Rolling restart: auth-service instance 1/4\"}"
+    },
+    {
+      "timestamp": 1700200070000,
+      "message": "{\"level\": \"WARN\", \"service\": \"AuthService\", \"message\": \"Token validation latency increased: 800ms\"}"
+    },
+    {
+      "timestamp": 1700200090000,
+      "message": "{\"level\": \"ERROR\", \"service\": \"AuthService\", \"message\": \"Token validation failed: secret mismatch across instances\"}"
+    },
+    {
+      "timestamp": 1700200095000,
+      "message": "{\"level\": \"ERROR\", \"service\": \"AuthService\", \"message\": \"Token validation failed: secret mismatch across instances\"}"
+    },
+    {
+      "timestamp": 1700200100000,
+      "message": "{\"level\": \"ERROR\", \"service\": \"APIGateway\", \"message\": \"401 Unauthorized spike: 2400 requests in 60s\"}"
+    },
+    {
+      "timestamp": 1700200110000,
+      "message": "{\"level\": \"FATAL\", \"service\": \"AuthService\", \"message\": \"Users logged out platform-wide: session tokens invalid\"}"
+    },
+    {
+      "timestamp": 1700200115000,
+      "message": "{\"level\": \"ERROR\", \"service\": \"AlertService\", \"message\": \"PagerDuty alert triggered: SEV1 \\u2014 authentication outage\"}"
+    },
+    {
+      "timestamp": 1700200150000,
+      "message": "{\"level\": \"INFO\", \"service\": \"DeployService\", \"message\": \"Rollback initiated: reverting to auth-service v2.13.2\"}"
+    },
+    {
+      "timestamp": 1700200200000,
+      "message": "{\"level\": \"INFO\", \"service\": \"DeployService\", \"message\": \"Rollback complete: all 4 instances on v2.13.2\"}"
+    },
+    {
+      "timestamp": 1700200220000,
+      "message": "{\"level\": \"INFO\", \"service\": \"AuthService\", \"message\": \"Token validation latency normal: 45ms\"}"
+    },
+    {
+      "timestamp": 1700200240000,
+      "message": "{\"level\": \"INFO\", \"service\": \"AuthService\", \"message\": \"Health check PASSED \\u2014 service recovered\"}"
+    }
+  ]
+}

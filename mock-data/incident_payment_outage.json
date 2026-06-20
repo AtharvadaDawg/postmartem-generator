@@ -1,1 +1,16 @@
-{"logEvents": []}
+{
+  "logEvents": [
+    {"timestamp": 1700000000000, "message": "{\"level\": \"INFO\", \"service\": \"PaymentService\", \"message\": \"Request received: POST /api/v1/payments\"}"},
+    {"timestamp": 1700000012000, "message": "{\"level\": \"INFO\", \"service\": \"PaymentService\", \"message\": \"Connecting to payment gateway...\"}"},
+    {"timestamp": 1700000045000, "message": "{\"level\": \"WARN\", \"service\": \"PaymentService\", \"message\": \"Gateway response slow: 2400ms\"}"},
+    {"timestamp": 1700000060000, "message": "{\"level\": \"ERROR\", \"service\": \"PaymentService\", \"message\": \"Gateway timeout after 3000ms \\u2014 retrying\"}"},
+    {"timestamp": 1700000075000, "message": "{\"level\": \"ERROR\", \"service\": \"PaymentService\", \"message\": \"Retry 1 failed: connection refused\"}"},
+    {"timestamp": 1700000090000, "message": "{\"level\": \"ERROR\", \"service\": \"PaymentService\", \"message\": \"Retry 2 failed: connection refused\"}"},
+    {"timestamp": 1700000095000, "message": "{\"level\": \"ERROR\", \"service\": \"DatabaseService\", \"message\": \"Connection pool exhausted: 100/100 connections active\"}"},
+    {"timestamp": 1700000100000, "message": "{\"level\": \"ERROR\", \"service\": \"PaymentService\", \"message\": \"Circuit breaker OPEN \\u2014 rejecting all payment requests\"}"},
+    {"timestamp": 1700000110000, "message": "{\"level\": \"FATAL\", \"service\": \"PaymentService\", \"message\": \"Service health check FAILED\"}"},
+    {"timestamp": 1700000240000, "message": "{\"level\": \"INFO\", \"service\": \"PaymentService\", \"message\": \"Gateway connection restored\"}"},
+    {"timestamp": 1700000255000, "message": "{\"level\": \"INFO\", \"service\": \"PaymentService\", \"message\": \"Circuit breaker CLOSED \\u2014 resuming requests\"}"},
+    {"timestamp": 1700000270000, "message": "{\"level\": \"INFO\", \"service\": \"PaymentService\", \"message\": \"Health check PASSED \\u2014 service recovered\"}"}
+  ]
+}

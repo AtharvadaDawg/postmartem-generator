@@ -64,85 +64,42 @@ def parse_logs(input: LogInput):
     return {"events": events}
 
 
+MOCK_DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "mock-data")
+
+SAMPLE_INCIDENTS = {
+    "payment_outage": "incident_payment_outage.json",
+    "db_pool_exhaustion": "incident_db_pool_exhaustion.json",
+    "bad_deployment": "incident_bad_deployment.json",
+}
+
+def parse_cloudwatch_file(filepath):
+    with open(filepath, "r") as f:
+        data = json.load(f)
+    log_events = data.get("logEvents", [])
+    events = []
+    for e in log_events:
+        try:
+            msg = json.loads(e.get("message", "{}"))
+        except Exception:
+            msg = {"message": e.get("message", "")}
+        events.append({
+            "timestamp": e.get("timestamp", 0),
+            "level": msg.get("level", "INFO"),
+            "service": msg.get("service", "unknown"),
+            "message": msg.get("message", str(msg))
+        })
+    return events
+
 @app.get("/api/sample-incident")
-def sample_incident():
-    events = [
-        {
-            "timestamp": 1700000000000,
-            "level": "INFO",
-            "service": "PaymentService",
-            "message": "Request received: POST /api/v1/payments"
-        },
-        {
-            "timestamp": 1700000012000,
-            "level": "INFO",
-            "service": "PaymentService",
-            "message": "Connecting to payment gateway..."
-        },
-        {
-            "timestamp": 1700000045000,
-            "level": "WARN",
-            "service": "PaymentService",
-            "message": "Gateway response slow: 2400ms"
-        },
-        {
-            "timestamp": 1700000060000,
-            "level": "ERROR",
-            "service": "PaymentService",
-            "message": "Gateway timeout after 3000ms — retrying"
-        },
-        {
-            "timestamp": 1700000075000,
-            "level": "ERROR",
-            "service": "PaymentService",
-            "message": "Retry 1 failed: connection refused"
-        },
-        {
-            "timestamp": 1700000090000,
-            "level": "ERROR",
-            "service": "PaymentService",
-            "message": "Retry 2 failed: connection refused"
-        },
-        {
-            "timestamp": 1700000095000,
-            "level": "ERROR",
-            "service": "DatabaseService",
-            "message": "Connection pool exhausted: 100/100 connections active"
-        },
-        {
-            "timestamp": 1700000100000,
-            "level": "ERROR",
-            "service": "PaymentService",
-            "message": "Circuit breaker OPEN — rejecting all payment requests"
-        },
-        {
-            "timestamp": 1700000110000,
-            "level": "FATAL",
-            "service": "PaymentService",
-            "message": "Service health check FAILED"
-        },
-        {
-            "timestamp": 1700000240000,
-            "level": "INFO",
-            "service": "PaymentService",
-            "message": "Gateway connection restored"
-        },
-        {
-            "timestamp": 1700000255000,
-            "level": "INFO",
-            "service": "PaymentService",
-            "message": "Circuit breaker CLOSED — resuming requests"
-        },
-        {
-            "timestamp": 1700000270000,
-            "level": "INFO",
-            "service": "PaymentService",
-            "message": "Health check PASSED — service recovered"
-        }
-    ]
-
+def sample_incident(scenario: str = "payment_outage"):
+    filename = SAMPLE_INCIDENTS.get(scenario)
+    if not filename:
+        return {"error": f"Unknown scenario: {scenario}"}
+    filepath = os.path.join(MOCK_DATA_DIR, filename)
+    if not os.path.exists(filepath):
+        return {"error": f"File not found: {filename}"}
+    events = parse_cloudwatch_file(filepath)
     return {"events": events}
-
 
 @app.post("/api/generate-postmortem")
 def generate_postmortem(input: GenerateInput):

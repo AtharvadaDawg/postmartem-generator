@@ -3,6 +3,7 @@ import React, { useState } from 'react'
 function UploadPage({ onLogsLoaded }) {
   const [activeTab, setActiveTab] = useState('paste')
   const [pasteValue, setPasteValue] = useState('')
+  const [scenario, setScenario] = useState('payment_outage')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -59,9 +60,13 @@ function UploadPage({ onLogsLoaded }) {
     setLoading(true)
     setError('')
     try {
-      const res = await fetch('/api/sample-incident')
+      const res = await fetch(`/api/sample-incident?scenario=${scenario}`)
       const data = await res.json()
-      onLogsLoaded(data.events)
+      if (data.error) {
+        setError(data.error)
+      } else {
+        onLogsLoaded(data.events)
+      }
     } catch (e) {
       setError('Failed to load sample.')
     }
@@ -133,9 +138,24 @@ function UploadPage({ onLogsLoaded }) {
       {/* Sample tab */}
       {activeTab === 'sample' && (
         <div style={{ textAlign: 'center', padding: '2rem' }}>
-          <p style={{ color: '#64748B', marginBottom: '1.5rem' }}>
-            Load a pre-built payment outage incident to see the tool in action.
+          <p style={{ color: '#64748B', marginBottom: '1rem' }}>
+            Choose a sample incident to see the tool in action.
           </p>
+
+          <select
+            value={scenario}
+            onChange={e => setScenario(e.target.value)}
+            style={{
+              padding: '0.5rem 0.75rem', marginBottom: '1.5rem',
+              borderRadius: '6px', border: '1px solid #CBD5E1',
+              fontSize: '13px', display: 'block', margin: '0 auto 1.5rem'
+            }}
+          >
+            <option value="payment_outage">Payment Gateway Outage</option>
+            <option value="db_pool_exhaustion">Database Pool Exhaustion</option>
+            <option value="bad_deployment">Bad Deployment — Auth Outage</option>
+          </select>
+
           <button
             onClick={handleSample}
             disabled={loading}
