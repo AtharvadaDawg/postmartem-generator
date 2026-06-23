@@ -1,84 +1,52 @@
 import React, { useState } from 'react'
 
-const levelColor = {
-  INFO:  { bg: '#EFF6FF', color: '#1D4ED8', border: '#BFDBFE' },
-  WARN:  { bg: '#FFFBEB', color: '#B45309', border: '#FDE68A' },
-  ERROR: { bg: '#FEF2F2', color: '#DC2626', border: '#FECACA' },
-  FATAL: { bg: '#FDF2F8', color: '#9D174D', border: '#FBCFE8' },
+const levelConfig = {
+  INFO:  { bg: 'bg-blue-50',   border: 'border-blue-200',  dot: 'bg-blue-500',   badge: 'bg-blue-100 text-blue-700' },
+  WARN:  { bg: 'bg-amber-50',  border: 'border-amber-200', dot: 'bg-amber-500',  badge: 'bg-amber-100 text-amber-700' },
+  ERROR: { bg: 'bg-red-50',    border: 'border-red-200',   dot: 'bg-red-500',    badge: 'bg-red-100 text-red-700' },
+  FATAL: { bg: 'bg-purple-50', border: 'border-purple-200',dot: 'bg-purple-600', badge: 'bg-purple-100 text-purple-700' },
 }
 
 function TimelineEvent({ event, index, onAnnotate, onRemove }) {
   const [editing, setEditing] = useState(false)
   const [note, setNote] = useState(event.note || '')
-  const colors = levelColor[event.level] || levelColor.INFO
+  const cfg = levelConfig[event.level] || levelConfig.INFO
   const time = new Date(event.timestamp).toLocaleTimeString()
 
   return (
-    <div style={{
-      display: 'flex', gap: '1rem', marginBottom: '0.75rem', alignItems: 'flex-start'
-    }}>
-      {/* Timeline spine */}
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: '4px' }}>
-        <div style={{
-          width: '12px', height: '12px', borderRadius: '50%',
-          background: colors.color, flexShrink: 0
-        }} />
-        <div style={{ width: '2px', flex: 1, background: '#E2E8F0', marginTop: '4px' }} />
+    <div className="flex gap-4 group">
+      <div className="flex flex-col items-center pt-1 flex-shrink-0">
+        <div className={`w-3 h-3 rounded-full ${cfg.dot} ring-4 ring-slate-50 shadow-sm`} />
+        <div className="w-px flex-1 bg-slate-200 mt-1 group-last:hidden" />
       </div>
-
-      {/* Event card */}
-      <div style={{
-        flex: 1, border: `1px solid ${colors.border}`,
-        borderRadius: '8px', padding: '0.75rem 1rem',
-        background: colors.bg, marginBottom: '0.25rem'
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <div>
-            <span style={{
-              fontSize: '11px', fontWeight: '600', color: colors.color,
-              background: 'white', padding: '1px 7px', borderRadius: '4px',
-              border: `1px solid ${colors.border}`, marginRight: '8px'
-            }}>{event.level}</span>
-            <span style={{ fontSize: '12px', color: '#64748B' }}>{time}</span>
-            <span style={{
-              fontSize: '11px', color: '#64748B', marginLeft: '8px',
-              background: '#F1F5F9', padding: '1px 7px', borderRadius: '4px'
-            }}>{event.service}</span>
+      <div className={`flex-1 mb-4 rounded-xl border ${cfg.border} ${cfg.bg} p-4 shadow-sm`}>
+        <div className="flex items-start justify-between gap-2 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className={`text-xs font-bold px-2 py-0.5 rounded-md ${cfg.badge}`}>{event.level}</span>
+            <span className="text-xs text-slate-400">{time}</span>
+            <span className="text-xs bg-white text-slate-500 px-2 py-0.5 rounded-md font-medium border border-slate-200">{event.service}</span>
           </div>
-          <div style={{ display: 'flex', gap: '6px' }}>
-            <button onClick={() => setEditing(!editing)} style={{
-              fontSize: '11px', padding: '2px 8px', border: '1px solid #CBD5E1',
-              borderRadius: '4px', background: 'white', cursor: 'pointer', color: '#475569'
-            }}>
+          <div className="flex gap-1.5">
+            <button onClick={() => setEditing(!editing)}
+              className="text-xs px-2.5 py-1 border border-slate-200 rounded-lg bg-white hover:bg-slate-50 text-slate-500 transition-colors">
               {editing ? 'Done' : 'Annotate'}
             </button>
-            <button onClick={() => onRemove(index)} style={{
-              fontSize: '11px', padding: '2px 8px', border: '1px solid #FECACA',
-              borderRadius: '4px', background: 'white', cursor: 'pointer', color: '#DC2626'
-            }}>Remove</button>
+            <button onClick={() => onRemove(index)}
+              className="text-xs px-2.5 py-1 border border-red-100 rounded-lg bg-white hover:bg-red-50 text-red-400 transition-colors">
+              Remove
+            </button>
           </div>
         </div>
-
-        <p style={{ margin: '0.5rem 0 0', fontSize: '13px', color: '#1E293B' }}>
-          {event.message}
-        </p>
-
+        <p className="text-sm text-slate-700 mt-2.5 font-medium">{event.message}</p>
         {editing && (
-          <textarea
-            value={note}
+          <textarea value={note}
             onChange={e => { setNote(e.target.value); onAnnotate(index, e.target.value) }}
-            placeholder="Add a note about this event..."
-            style={{
-              marginTop: '0.5rem', width: '100%', padding: '0.4rem',
-              fontSize: '12px', border: '1px solid #CBD5E1', borderRadius: '4px',
-              fontFamily: 'sans-serif', resize: 'vertical', boxSizing: 'border-box'
-            }}
+            placeholder="Add an engineering note..."
+            className="mt-2.5 w-full p-2.5 text-xs border border-slate-200 rounded-lg outline-none focus:border-[#0D9488] focus:ring-2 focus:ring-teal-100 resize-none h-16 transition bg-white"
           />
         )}
         {!editing && note && (
-          <p style={{ marginTop: '0.4rem', fontSize: '12px', color: '#475569', fontStyle: 'italic' }}>
-            📝 {note}
-          </p>
+          <p className="mt-2 text-xs text-slate-500 italic bg-white/60 rounded-lg px-3 py-2 border border-slate-100">📝 {note}</p>
         )}
       </div>
     </div>
@@ -94,68 +62,66 @@ function TimelinePage({ events, onBack, onGenerate }) {
     setItems(updated)
   }
 
-  const handleRemove = (index) => {
-    setItems(items.filter((_, i) => i !== index))
-  }
+  const handleRemove = (index) => setItems(items.filter((_, i) => i !== index))
 
   const errorCount  = items.filter(e => e.level === 'ERROR' || e.level === 'FATAL').length
   const warnCount   = items.filter(e => e.level === 'WARN').length
-  const serviceList = [...new Set(items.map(e => e.service))].join(', ')
+  const serviceList = [...new Set(items.map(e => e.service))]
 
   return (
-    <div style={{ maxWidth: '760px', margin: '2rem auto', padding: '0 1.5rem', fontFamily: 'sans-serif' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+    <div className="h-full flex flex-col">
+      {/* Page header */}
+      <div className="px-8 pt-8 pb-6 border-b border-slate-200 bg-white flex items-start justify-between gap-4">
         <div>
-          <button onClick={onBack} style={{
-            fontSize: '13px', color: '#64748B', background: 'none',
-            border: 'none', cursor: 'pointer', padding: '0', marginBottom: '0.5rem'
-          }}>← Back</button>
-          <h1 style={{ fontSize: '22px', fontWeight: '700', color: '#0D1B2A', margin: 0 }}>
-            Incident Timeline
-          </h1>
+          <button onClick={onBack} className="text-xs text-slate-400 hover:text-slate-600 mb-2 flex items-center gap-1 transition-colors">
+            ← Back
+          </button>
+          <h1 className="text-xl font-bold text-[#0D1B2A]">Incident Timeline</h1>
+          <p className="text-sm text-slate-400 mt-0.5">Review, annotate, or remove events before generating</p>
         </div>
-        <button onClick={() => onGenerate(items)} style={{
-          padding: '0.6rem 1.4rem', background: '#0D9488', color: 'white',
-          border: 'none', borderRadius: '6px', cursor: 'pointer',
-          fontWeight: '600', fontSize: '14px'
-        }}>
+        <button onClick={() => onGenerate(items)}
+          className="flex-shrink-0 px-5 py-2.5 bg-[#0D9488] hover:bg-[#0F766E] text-white font-semibold rounded-xl text-sm transition-colors shadow-sm">
           Generate Postmortem →
         </button>
       </div>
 
-      {/* Stats bar */}
-      <div style={{
-        display: 'flex', gap: '1rem', marginBottom: '1.5rem',
-        padding: '0.75rem 1rem', background: '#F8FAFC',
-        borderRadius: '8px', border: '1px solid #E2E8F0', fontSize: '13px'
-      }}>
-        <span><strong>{items.length}</strong> events</span>
-        <span style={{ color: '#DC2626' }}><strong>{errorCount}</strong> errors</span>
-        <span style={{ color: '#B45309' }}><strong>{warnCount}</strong> warnings</span>
-        <span style={{ color: '#64748B' }}>Services: {serviceList}</span>
-      </div>
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto p-8">
+        {/* Stats */}
+        <div className="grid grid-cols-4 gap-3 mb-6">
+          {[
+            { label: 'Total events', value: items.length, color: 'text-slate-700' },
+            { label: 'Errors / Fatal', value: errorCount, color: 'text-red-600' },
+            { label: 'Warnings', value: warnCount, color: 'text-amber-600' },
+            { label: 'Services', value: serviceList.length, color: 'text-blue-600' },
+          ].map(stat => (
+            <div key={stat.label} className="bg-white rounded-xl border border-slate-100 p-4 shadow-sm text-center">
+              <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
+              <p className="text-xs text-slate-400 mt-0.5">{stat.label}</p>
+            </div>
+          ))}
+        </div>
 
-      {/* Timeline */}
-      {items.map((event, i) => (
-        <TimelineEvent
-          key={i}
-          event={event}
-          index={i}
-          onAnnotate={handleAnnotate}
-          onRemove={handleRemove}
-        />
-      ))}
+        {/* Services */}
+        <div className="flex flex-wrap gap-2 mb-6">
+          {serviceList.map(s => (
+            <span key={s} className="text-xs bg-[#0D1B2A] text-slate-300 px-3 py-1 rounded-full font-medium">{s}</span>
+          ))}
+        </div>
 
-      {/* Bottom generate button */}
-      <div style={{ marginTop: '1.5rem', textAlign: 'right' }}>
-        <button onClick={() => onGenerate(items)} style={{
-          padding: '0.7rem 2rem', background: '#0D9488', color: 'white',
-          border: 'none', borderRadius: '6px', cursor: 'pointer',
-          fontWeight: '600', fontSize: '15px'
-        }}>
-          Generate Postmortem →
-        </button>
+        {/* Timeline */}
+        <div>
+          {items.map((event, i) => (
+            <TimelineEvent key={i} event={event} index={i} onAnnotate={handleAnnotate} onRemove={handleRemove} />
+          ))}
+        </div>
+
+        <div className="mt-4 flex justify-end">
+          <button onClick={() => onGenerate(items)}
+            className="px-6 py-2.5 bg-[#0D9488] hover:bg-[#0F766E] text-white font-semibold rounded-xl text-sm transition-colors shadow-sm">
+            Generate Postmortem →
+          </button>
+        </div>
       </div>
     </div>
   )

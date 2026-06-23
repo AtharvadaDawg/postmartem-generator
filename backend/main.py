@@ -5,6 +5,7 @@ from openai import OpenAI
 from dotenv import load_dotenv
 import json
 import os
+import datetime
 from cloudwatch_client import fetch_cloudwatch_logs
 
 load_dotenv()
@@ -23,47 +24,23 @@ client_ai = OpenAI(
     base_url="https://openrouter.ai/api/v1"
 )
 
-class LogInput(BaseModel):
-    raw_logs: str
+# ── Incident persistence ──────────────────────────────────────────────────────
 
-class GenerateInput(BaseModel):
-    events: list
+INCIDENTS_FILE = os.path.join(os.path.dirname(__file__), "incidents.json")
 
-@app.get("/api/health")
-def health():
-    return {
-        "status": "ok",
-        "message": "Backend is running"
-    }
+def load_incidents():
+    if not os.path.exists(INCIDENTS_FILE):
+        return []
+    with open(INCIDENTS_FILE, "r") as f:
+        return json.load(f)
 
-@app.post("/api/parse-logs")
-def parse_logs(input: LogInput):
-    try:
-        data = json.loads(input.raw_logs)
-        log_events = data.get(
-            "logEvents",
-            data if isinstance(data, list) else []
-        )
-    except Exception:
-        log_events = []
+def save_incident(record):
+    incidents = load_incidents()
+    incidents.append(record)
+    with open(INCIDENTS_FILE, "w") as f:
+        json.dump(incidents, f, indent=2)
 
-    events = []
-
-    for e in log_events:
-        try:
-            msg = json.loads(e.get("message", "{}"))
-        except Exception:
-            msg = {"message": e.get("message", "")}
-
-        events.append({
-            "timestamp": e.get("timestamp", 0),
-            "level": msg.get("level", "INFO"),
-            "service": msg.get("service", "unknown"),
-            "message": msg.get("message", str(msg))
-        })
-
-    return {"events": events}
-
+# ── Mock data ─────────────────────────────────────────────────────────────────
 
 MOCK_DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "mock-data")
 
@@ -91,6 +68,42 @@ def parse_cloudwatch_file(filepath):
         })
     return events
 
+# ── Pydantic models ───────────────────────────────────────────────────────────
+
+class LogInput(BaseModel):
+    raw_logs: str
+
+class GenerateInput(BaseModel):
+    events: list
+
+# ── Routes ────────────────────────────────────────────────────────────────────
+
+@app.get("/api/health")
+def health():
+    return {"status": "ok", "message": "Backend is running"}
+
+@app.post("/api/parse-logs")
+def parse_logs(input: LogInput):
+    try:
+        data = json.loads(input.raw_logs)
+        log_events = data.get("logEvents", data if isinstance(data, list) else [])
+    except Exception:
+        log_events = []
+
+    events = []
+    for e in log_events:
+        try:
+            msg = json.loads(e.get("message", "{}"))
+        except Exception:
+            msg = {"message": e.get("message", "")}
+        events.append({
+            "timestamp": e.get("timestamp", 0),
+            "level": msg.get("level", "INFO"),
+            "service": msg.get("service", "unknown"),
+            "message": msg.get("message", str(msg))
+        })
+    return {"events": events}
+
 @app.get("/api/sample-incident")
 def sample_incident(scenario: str = "payment_outage"):
     filename = SAMPLE_INCIDENTS.get(scenario)
@@ -101,6 +114,24 @@ def sample_incident(scenario: str = "payment_outage"):
         return {"error": f"File not found: {filename}"}
     events = parse_cloudwatch_file(filepath)
     return {"events": events}
+
+@app.get("/api/incidents")
+def get_incidents():
+    return {"incidents": load_incidents()}
+
+@app.delete("/api/incidents")
+def clear_incidents():
+    if os.path.exists(INCIDENTS_FILE):
+        os.remove(INCIDENTS_FILE)
+    return {"status": "cleared"}
+
+@app.get("/api/fetch-cloudwatch-logs")
+def fetch_cloudwatch(log_group: str = "/digitide/postmortem-demo", hours: int = 24):
+    try:
+        events = fetch_cloudwatch_logs(log_group, hours_back=hours)
+        return {"events": events}
+    except Exception as e:
+        return {"error": str(e)}
 
 @app.post("/api/generate-postmortem")
 def generate_postmortem(input: GenerateInput):
@@ -166,18 +197,28 @@ Return only JSON.
             else:
                 technical = technical_raw
 
+            # Save incident record
+            services = list(set(e.get('service', 'unknown') for e in input.events))
+            error_count = sum(1 for e in input.events if e.get('level') in ['ERROR', 'FATAL'])
+            warn_count  = sum(1 for e in input.events if e.get('level') == 'WARN')
+            root_cause_snippet = technical[:120].split('\n')[0] if technical else ''
+
+            save_incident({
+                "id": len(load_incidents()) + 1,
+                "timestamp": datetime.datetime.utcnow().isoformat(),
+                "services": services,
+                "event_count": len(input.events),
+                "error_count": error_count,
+                "warn_count": warn_count,
+                "root_cause_snippet": root_cause_snippet,
+                "technical": technical,
+                "non_technical": non_technical
+            })
+
             return {"technical": technical.strip(), "non_technical": non_technical}
 
         except json.JSONDecodeError:
             return {"technical": full_text, "non_technical": "", "warning": "Non-JSON output"}
 
-    except Exception as e:
-        return {"error": str(e)}
-    
-@app.get("/api/fetch-cloudwatch-logs")
-def fetch_cloudwatch(log_group: str = "/digitide/postmortem-demo", hours: int = 24):
-    try:
-        events = fetch_cloudwatch_logs(log_group, hours_back=hours)
-        return {"events": events}
     except Exception as e:
         return {"error": str(e)}

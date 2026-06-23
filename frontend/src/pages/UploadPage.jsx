@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
+import * as Tabs from '@radix-ui/react-tabs'
 
 function UploadPage({ onLogsLoaded }) {
-  const [activeTab, setActiveTab] = useState('paste')
   const [pasteValue, setPasteValue] = useState('')
   const [scenario, setScenario] = useState('payment_outage')
   const [logGroup, setLogGroup] = useState('/digitide/postmortem-demo')
@@ -9,243 +9,201 @@ function UploadPage({ onLogsLoaded }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const tabStyle = (tab) => ({
-    padding: '0.5rem 1.25rem',
-    cursor: 'pointer',
-    border: 'none',
-    borderBottom: activeTab === tab ? '2px solid #0D9488' : '2px solid transparent',
-    background: 'none',
-    fontWeight: activeTab === tab ? '600' : '400',
-    color: activeTab === tab ? '#0D9488' : '#64748B',
-    fontSize: '14px'
-  })
-
   const handlePasteSubmit = async () => {
     if (!pasteValue.trim()) return setError('Paste some log data first')
-    setLoading(true)
-    setError('')
+    setLoading(true); setError('')
     try {
       const res = await fetch('/api/parse-logs', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ raw_logs: pasteValue })
       })
       const data = await res.json()
       onLogsLoaded(data.events)
-    } catch (e) {
-      setError('Failed to parse logs. Is the backend running?')
-    }
+    } catch { setError('Failed to parse logs.') }
     setLoading(false)
   }
 
   const handleFileUpload = async (e) => {
     const file = e.target.files[0]
     if (!file) return
-    setLoading(true)
-    setError('')
+    setLoading(true); setError('')
     const text = await file.text()
     try {
       const res = await fetch('/api/parse-logs', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ raw_logs: text })
       })
       const data = await res.json()
       onLogsLoaded(data.events)
-    } catch (e) {
-      setError('Failed to parse file.')
-    }
+    } catch { setError('Failed to parse file.') }
     setLoading(false)
   }
 
   const handleSample = async () => {
-    setLoading(true)
-    setError('')
+    setLoading(true); setError('')
     try {
       const res = await fetch(`/api/sample-incident?scenario=${scenario}`)
       const data = await res.json()
-      if (data.error) {
-        setError(data.error)
-      } else {
-        onLogsLoaded(data.events)
-      }
-    } catch (e) {
-      setError('Failed to load sample.')
-    }
+      if (data.error) setError(data.error)
+      else onLogsLoaded(data.events)
+    } catch { setError('Failed to load sample.') }
     setLoading(false)
   }
 
   const handleCloudWatchFetch = async () => {
-    setLoading(true)
-    setError('')
+    setLoading(true); setError('')
     try {
       const res = await fetch(`/api/fetch-cloudwatch-logs?log_group=${encodeURIComponent(logGroup)}&hours=${hoursBack}`)
       const data = await res.json()
-      if (data.error) {
-        setError(data.error)
-      } else if (data.events.length === 0) {
-        setError('No events found in this time window. Try increasing the hours.')
-      } else {
-        onLogsLoaded(data.events)
-      }
-    } catch (e) {
-      setError('Failed to fetch from CloudWatch.')
-    }
+      if (data.error) setError(data.error)
+      else if (data.events.length === 0) setError('No events found. Try increasing the time window.')
+      else onLogsLoaded(data.events)
+    } catch { setError('Failed to fetch from CloudWatch.') }
     setLoading(false)
   }
 
-  return (
-    <div style={{ maxWidth: '720px', margin: '4rem auto', padding: '0 1.5rem', fontFamily: 'sans-serif' }}>
-      <h1 style={{ fontSize: '28px', fontWeight: '700', color: '#0D1B2A', marginBottom: '0.25rem' }}>
-        Postmortem Generator
-      </h1>
-      <p style={{ color: '#64748B', marginBottom: '2rem' }}>
-        Upload your incident logs and generate a postmortem in seconds.
-      </p>
+  const btnPrimary = "w-full py-2.5 bg-[#0D9488] hover:bg-[#0F766E] text-white font-semibold rounded-xl transition-colors disabled:opacity-50 text-sm"
+  const inputClass = "w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#0D9488] focus:ring-2 focus:ring-teal-100 transition bg-white"
+  const labelClass = "block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5"
 
-      {/* Tabs */}
-      <div style={{ borderBottom: '1px solid #E2E8F0', marginBottom: '1.5rem', display: 'flex', gap: '0.5rem' }}>
-        <button style={tabStyle('paste')} onClick={() => setActiveTab('paste')}>Paste JSON</button>
-        <button style={tabStyle('file')} onClick={() => setActiveTab('file')}>Upload File</button>
-        <button style={tabStyle('sample')} onClick={() => setActiveTab('sample')}>Load Sample</button>
-        <button style={tabStyle('cloudwatch')} onClick={() => setActiveTab('cloudwatch')}>CloudWatch</button>
+  const samples = [
+    { value: 'payment_outage', label: 'Payment Gateway Outage', desc: '12 events · PaymentService · 4 min outage' },
+    { value: 'db_pool_exhaustion', label: 'Database Pool Exhaustion', desc: '14 events · OrderService · Black Friday spike' },
+    { value: 'bad_deployment', label: 'Bad Deployment — Auth Outage', desc: '13 events · AuthService · Platform-wide logout' },
+  ]
+
+  return (
+    <div className="h-full flex flex-col">
+      {/* Page header */}
+      <div className="px-8 pt-8 pb-6 border-b border-slate-200 bg-white">
+        <h1 className="text-xl font-bold text-[#0D1B2A]">Upload Incident Logs</h1>
+        <p className="text-sm text-slate-400 mt-0.5">Paste, upload, or fetch logs from CloudWatch to get started.</p>
       </div>
 
-      {/* Paste tab */}
-      {activeTab === 'paste' && (
-        <div>
-          <textarea
-            value={pasteValue}
-            onChange={e => setPasteValue(e.target.value)}
-            placeholder='Paste CloudWatch JSON logs here...'
-            style={{
-              width: '100%', height: '220px', padding: '0.75rem',
-              border: '1px solid #E2E8F0', borderRadius: '8px',
-              fontFamily: 'monospace', fontSize: '13px',
-              resize: 'vertical', outline: 'none', boxSizing: 'border-box'
-            }}
-          />
-          <button
-            onClick={handlePasteSubmit}
-            disabled={loading}
-            style={{
-              marginTop: '1rem', padding: '0.6rem 1.5rem',
-              background: '#0D9488', color: 'white', border: 'none',
-              borderRadius: '6px', cursor: 'pointer', fontWeight: '600'
-            }}
-          >
-            {loading ? 'Parsing...' : 'Parse Logs →'}
-          </button>
-        </div>
-      )}
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto p-8">
+        <div className="max-w-2xl">
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+            <Tabs.Root defaultValue="paste" onValueChange={() => setError('')}>
+              <Tabs.List className="flex border-b border-slate-100">
+                {[
+                  { value: 'paste', label: 'Paste JSON' },
+                  { value: 'file', label: 'Upload File' },
+                  { value: 'sample', label: 'Load Sample' },
+                  { value: 'cloudwatch', label: '☁️ CloudWatch' },
+                ].map(tab => (
+                  <Tabs.Trigger
+                    key={tab.value}
+                    value={tab.value}
+                    className="flex-1 py-3.5 text-xs font-medium text-slate-500 transition-colors hover:text-slate-700 hover:bg-slate-50 data-[state=active]:text-[#0D9488] data-[state=active]:border-b-2 data-[state=active]:border-[#0D9488] data-[state=active]:bg-teal-50/50 outline-none"
+                  >
+                    {tab.label}
+                  </Tabs.Trigger>
+                ))}
+              </Tabs.List>
 
-      {/* File upload tab */}
-      {activeTab === 'file' && (
-        <div style={{
-          border: '2px dashed #CBD5E1', borderRadius: '8px',
-          padding: '3rem', textAlign: 'center'
-        }}>
-          <p style={{ color: '#64748B', marginBottom: '1rem' }}>
-            Drop a CloudWatch JSON export here or click to browse
-          </p>
-          <input
-            type='file'
-            accept='.json,.txt,.log'
-            onChange={handleFileUpload}
-            style={{ cursor: 'pointer' }}
-          />
-        </div>
-      )}
+              <div className="p-6">
+                {/* Paste JSON */}
+                <Tabs.Content value="paste">
+                  <p className="text-xs text-slate-400 mb-3">Paste a CloudWatch JSON log export.</p>
+                  <textarea
+                    value={pasteValue}
+                    onChange={e => setPasteValue(e.target.value)}
+                    placeholder={'{\n  "logEvents": [\n    {"timestamp": 1700000000000, "message": "..."}\n  ]\n}'}
+                    className="w-full h-48 p-3 border border-slate-200 rounded-xl font-mono text-xs text-slate-700 resize-y outline-none focus:border-[#0D9488] focus:ring-2 focus:ring-teal-100 transition"
+                  />
+                  <button onClick={handlePasteSubmit} disabled={loading} className={`mt-4 ${btnPrimary}`}>
+                    {loading ? 'Parsing...' : 'Parse Logs →'}
+                  </button>
+                </Tabs.Content>
 
-      {/* Sample tab */}
-      {activeTab === 'sample' && (
-        <div style={{ textAlign: 'center', padding: '2rem' }}>
-          <p style={{ color: '#64748B', marginBottom: '1rem' }}>
-            Choose a sample incident to see the tool in action.
-          </p>
+                {/* Upload File */}
+                <Tabs.Content value="file">
+                  <label className="flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-xl p-10 cursor-pointer hover:border-[#0D9488] hover:bg-teal-50/30 transition-colors group">
+                    <div className="w-12 h-12 bg-slate-100 group-hover:bg-teal-100 rounded-2xl flex items-center justify-center mb-3 transition-colors">
+                      <span className="text-2xl">📄</span>
+                    </div>
+                    <p className="font-semibold text-slate-700 mb-1 text-sm">Drop your log file here</p>
+                    <p className="text-xs text-slate-400 mb-4">Supports .json, .log, .txt</p>
+                    <span className="px-4 py-2 bg-[#0D9488] text-white text-xs font-semibold rounded-xl">Browse files</span>
+                    <input type="file" accept=".json,.txt,.log" onChange={handleFileUpload} className="hidden" />
+                  </label>
+                </Tabs.Content>
 
-          <select
-            value={scenario}
-            onChange={e => setScenario(e.target.value)}
-            style={{
-              padding: '0.5rem 0.75rem', marginBottom: '1.5rem',
-              borderRadius: '6px', border: '1px solid #CBD5E1',
-              fontSize: '13px', display: 'block', margin: '0 auto 1.5rem'
-            }}
-          >
-            <option value="payment_outage">Payment Gateway Outage</option>
-            <option value="db_pool_exhaustion">Database Pool Exhaustion</option>
-            <option value="bad_deployment">Bad Deployment — Auth Outage</option>
-          </select>
+                {/* Load Sample */}
+                <Tabs.Content value="sample">
+                  <p className="text-xs text-slate-400 mb-4">Choose a pre-built incident scenario.</p>
+                  <div className="space-y-2.5 mb-5">
+                    {samples.map(s => (
+                      <label key={s.value} className={`flex items-start gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-colors ${
+                        scenario === s.value ? 'border-[#0D9488] bg-teal-50' : 'border-slate-100 hover:border-slate-200'
+                      }`}>
+                        <input type="radio" name="scenario" value={s.value}
+                          checked={scenario === s.value} onChange={e => setScenario(e.target.value)}
+                          className="mt-0.5 accent-[#0D9488]" />
+                        <div>
+                          <p className="font-semibold text-slate-800 text-sm">{s.label}</p>
+                          <p className="text-xs text-slate-400 mt-0.5">{s.desc}</p>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                  <button onClick={handleSample} disabled={loading} className={btnPrimary}>
+                    {loading ? 'Loading...' : 'Load Sample Incident →'}
+                  </button>
+                </Tabs.Content>
 
-          <button
-            onClick={handleSample}
-            disabled={loading}
-            style={{
-              padding: '0.6rem 1.5rem',
-              background: '#0D9488', color: 'white', border: 'none',
-              borderRadius: '6px', cursor: 'pointer', fontWeight: '600'
-            }}
-          >
-            {loading ? 'Loading...' : 'Load Sample Incident →'}
-          </button>
-        </div>
-      )}
+                {/* CloudWatch */}
+                <Tabs.Content value="cloudwatch">
+                  <div className="flex items-center gap-2 mb-5 p-3 bg-teal-50 border border-teal-100 rounded-xl">
+                    <span className="text-teal-600">☁️</span>
+                    <p className="text-xs text-teal-700 font-medium">Fetches live logs from your AWS account via boto3.</p>
+                  </div>
+                  <div className="space-y-4 mb-5">
+                    <div>
+                      <label className={labelClass}>Log Group</label>
+                      <input type="text" value={logGroup} onChange={e => setLogGroup(e.target.value)}
+                        className={`${inputClass} font-mono text-xs`} />
+                    </div>
+                    <div>
+                      <label className={labelClass}>Time Window</label>
+                      <select value={hoursBack} onChange={e => setHoursBack(Number(e.target.value))} className={inputClass}>
+                        <option value={1}>Last 1 hour</option>
+                        <option value={6}>Last 6 hours</option>
+                        <option value={24}>Last 24 hours</option>
+                        <option value={168}>Last 7 days</option>
+                      </select>
+                    </div>
+                  </div>
+                  <button onClick={handleCloudWatchFetch} disabled={loading} className={btnPrimary}>
+                    {loading ? 'Fetching from AWS...' : 'Fetch from CloudWatch →'}
+                  </button>
+                </Tabs.Content>
+              </div>
+            </Tabs.Root>
 
-      {/* CloudWatch tab */}
-      {activeTab === 'cloudwatch' && (
-        <div style={{ textAlign: 'center', padding: '2rem' }}>
-          <p style={{ color: '#64748B', marginBottom: '1.5rem' }}>
-            Fetch live logs directly from AWS CloudWatch.
-          </p>
-
-          <div style={{ textAlign: 'left', maxWidth: '420px', margin: '0 auto' }}>
-            <label style={{ fontSize: '12px', color: '#475569', fontWeight: '600' }}>Log Group</label>
-            <input
-              type="text"
-              value={logGroup}
-              onChange={e => setLogGroup(e.target.value)}
-              style={{
-                width: '100%', padding: '0.5rem', marginTop: '0.25rem', marginBottom: '1rem',
-                borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '13px',
-                fontFamily: 'monospace', boxSizing: 'border-box'
-              }}
-            />
-
-            <label style={{ fontSize: '12px', color: '#475569', fontWeight: '600' }}>Time Window</label>
-            <select
-              value={hoursBack}
-              onChange={e => setHoursBack(Number(e.target.value))}
-              style={{
-                width: '100%', padding: '0.5rem', marginTop: '0.25rem', marginBottom: '1.5rem',
-                borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '13px',
-                boxSizing: 'border-box'
-              }}
-            >
-              <option value={1}>Last 1 hour</option>
-              <option value={6}>Last 6 hours</option>
-              <option value={24}>Last 24 hours</option>
-              <option value={168}>Last 7 days</option>
-            </select>
+            {error && (
+              <div className="mx-6 mb-6 p-3 bg-red-50 border border-red-100 rounded-xl">
+                <p className="text-red-600 text-xs font-medium">{error}</p>
+              </div>
+            )}
           </div>
 
-          <button
-            onClick={handleCloudWatchFetch}
-            disabled={loading}
-            style={{
-              padding: '0.6rem 1.5rem',
-              background: '#0D9488', color: 'white', border: 'none',
-              borderRadius: '6px', cursor: 'pointer', fontWeight: '600'
-            }}
-          >
-            {loading ? 'Fetching...' : 'Fetch from CloudWatch →'}
-          </button>
+          {/* Stats */}
+          <div className="flex gap-8 mt-6 px-1">
+            {[
+              { label: 'Log Sources', value: '4' },
+              { label: 'Sample Incidents', value: '3' },
+              { label: 'Output Formats', value: '2' },
+            ].map(stat => (
+              <div key={stat.label}>
+                <p className="text-2xl font-bold text-[#0D1B2A]">{stat.value}</p>
+                <p className="text-xs text-slate-400 mt-0.5">{stat.label}</p>
+              </div>
+            ))}
+          </div>
         </div>
-      )}
-
-      {error && (
-        <p style={{ color: '#EF4444', marginTop: '1rem', fontSize: '14px' }}>{error}</p>
-      )}
+      </div>
     </div>
   )
 }
