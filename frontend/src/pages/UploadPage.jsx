@@ -5,6 +5,7 @@ function UploadPage({ onLogsLoaded }) {
   const [pasteValue, setPasteValue] = useState('')
   const [scenario, setScenario] = useState('payment_outage')
   const [logGroup, setLogGroup] = useState('/digitide/postmortem-demo')
+  const [logStream, setLogStream] = useState('payment-outage')
   const [hoursBack, setHoursBack] = useState(24)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -53,7 +54,9 @@ function UploadPage({ onLogsLoaded }) {
   const handleCloudWatchFetch = async () => {
     setLoading(true); setError('')
     try {
-      const res = await fetch(`/api/fetch-cloudwatch-logs?log_group=${encodeURIComponent(logGroup)}&hours=${hoursBack}`)
+      const res = await fetch(
+  `/api/fetch-cloudwatch-logs?log_group=${encodeURIComponent(logGroup)}&log_stream=${encodeURIComponent(logStream)}&hours=${hoursBack}`
+)
       const data = await res.json()
       if (data.error) setError(data.error)
       else if (data.events.length === 0) setError('No events found. Try increasing the time window.')
@@ -165,6 +168,23 @@ function UploadPage({ onLogsLoaded }) {
                       <input type="text" value={logGroup} onChange={e => setLogGroup(e.target.value)}
                         className={`${inputClass} font-mono text-xs`} />
                     </div>
+                    <div>
+  <label className={labelClass}>Log Stream</label>
+
+  <select
+    value={logStream}
+    onChange={e => setLogStream(e.target.value)}
+    className={inputClass}
+  >
+    <option value="payment-outage">payment-outage</option>
+    <option value="db-pool-exhaustion">db-pool-exhaustion</option>
+    <option value="k8s-crashloop">k8s-crashloop</option>
+    <option value="bad-deployment">bad-deployment</option>
+    <option value="disk-full">disk-full</option>
+    <option value="high-cpu">high-cpu</option>
+    <option value="security-attack">security-attack</option>
+  </select>
+</div>
                     <div>
                       <label className={labelClass}>Time Window</label>
                       <select value={hoursBack} onChange={e => setHoursBack(Number(e.target.value))} className={inputClass}>

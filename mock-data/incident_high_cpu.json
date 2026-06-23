@@ -1,0 +1,14 @@
+{
+  "logEvents": [
+    {"timestamp": 1782210000000, "message": "{\"level\":\"INFO\",\"service\":\"web-api\",\"message\":\"Service operational.\"}"},
+    {"timestamp": 1782210010000, "message": "{\"level\":\"INFO\",\"service\":\"web-api\",\"message\":\"Traffic spike detected.\"}"},
+    {"timestamp": 1782210020000, "message": "{\"level\":\"WARNING\",\"service\":\"system\",\"message\":\"CPU utilization reached 80%.\"}"},
+    {"timestamp": 1782210030000, "message": "{\"level\":\"WARNING\",\"service\":\"system\",\"message\":\"CPU utilization reached 92%.\"}"},
+    {"timestamp": 1782210040000, "message": "{\"level\":\"WARNING\",\"service\":\"system\",\"message\":\"CPU utilization reached 98%.\"}"},
+    {"timestamp": 1782210050000, "message": "{\"level\":\"ERROR\",\"service\":\"web-api\",\"message\":\"Request latency exceeded SLA.\"}"},
+    {"timestamp": 1782210060000, "message": "{\"level\":\"ERROR\",\"service\":\"web-api\",\"message\":\"Request timeout errors increasing.\"}"},
+    {"timestamp": 1782210070000, "message": "{\"level\":\"CRITICAL\",\"service\":\"load-balancer\",\"message\":\"Backend instances unhealthy.\"}"},
+    {"timestamp": 1782210150000, "message": "{\"level\":\"INFO\",\"service\":\"autoscaling\",\"message\":\"Launching additional instances.\"}"},
+    {"timestamp": 1782210200000, "message": "{\"level\":\"INFO\",\"service\":\"web-api\",\"message\":\"Latency returned to normal.\"}"}
+  ]
+}

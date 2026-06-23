@@ -1,0 +1,14 @@
+{
+  "logEvents": [
+    {"timestamp": 1782211000000, "message": "{\"level\":\"INFO\",\"service\":\"auth-service\",\"message\":\"Authentication service running.\"}"},
+    {"timestamp": 1782211010000, "message": "{\"level\":\"WARNING\",\"service\":\"auth-service\",\"message\":\"20 failed login attempts detected from IP 203.0.113.45.\"}"},
+    {"timestamp": 1782211020000, "message": "{\"level\":\"WARNING\",\"service\":\"auth-service\",\"message\":\"50 failed login attempts detected from IP 203.0.113.45.\"}"},
+    {"timestamp": 1782211030000, "message": "{\"level\":\"WARNING\",\"service\":\"waf\",\"message\":\"Suspicious traffic pattern detected.\"}"},
+    {"timestamp": 1782211040000, "message": "{\"level\":\"ERROR\",\"service\":\"auth-service\",\"message\":\"Failed login threshold exceeded.\"}"},
+    {"timestamp": 1782211050000, "message": "{\"level\":\"CRITICAL\",\"service\":\"security\",\"message\":\"Potential brute-force attack identified.\"}"},
+    {"timestamp": 1782211060000, "message": "{\"level\":\"INFO\",\"service\":\"waf\",\"message\":\"Source IP blocked automatically.\"}"},
+    {"timestamp": 1782211070000, "message": "{\"level\":\"INFO\",\"service\":\"security\",\"message\":\"Investigation initiated.\"}"},
+    {"timestamp": 1782211080000, "message": "{\"level\":\"INFO\",\"service\":\"security\",\"message\":\"No successful unauthorized access detected.\"}"},
+    {"timestamp": 1782211090000, "message": "{\"level\":\"INFO\",\"service\":\"security\",\"message\":\"Incident resolved.\"}"}
+  ]
+}

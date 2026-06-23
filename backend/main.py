@@ -14,7 +14,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -48,7 +48,12 @@ SAMPLE_INCIDENTS = {
     "payment_outage": "incident_payment_outage.json",
     "db_pool_exhaustion": "incident_db_pool_exhaustion.json",
     "bad_deployment": "incident_bad_deployment.json",
+    "disk_full": "incident_disk_full.json",
+    "high_cpu": "incident_high_cpu.json",
+    "k8s_crashloop": "incident_k8s_crashloop.json",
+    "security_attack": "incident_security_attack.json",
 }
+
 
 def parse_cloudwatch_file(filepath):
     with open(filepath, "r") as f:
@@ -126,10 +131,48 @@ def clear_incidents():
     return {"status": "cleared"}
 
 @app.get("/api/fetch-cloudwatch-logs")
-def fetch_cloudwatch(log_group: str = "/digitide/postmortem-demo", hours: int = 24):
+def fetch_cloudwatch(
+    log_group: str = "/digitide/postmortem-demo",
+    log_stream: str | None = None,
+    hours: int = 24
+):
     try:
-        events = fetch_cloudwatch_logs(log_group, hours_back=hours)
+        events = fetch_cloudwatch_logs(
+            log_group_name=log_group,
+            log_stream_name=log_stream,
+            hours_back=hours
+        )
+
         return {"events": events}
+
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.get("/api/log-streams")
+def get_log_streams(
+    log_group: str = "/digitide/postmortem-demo"
+):
+    try:
+        import boto3
+
+        client = boto3.client(
+            "logs",
+            region_name=os.getenv("AWS_REGION", "ap-south-1")
+        )
+
+        response = client.describe_log_streams(
+            logGroupName=log_group,
+            orderBy="LastEventTime",
+            descending=True
+        )
+
+        streams = [
+            stream["logStreamName"]
+            for stream in response.get("logStreams", [])
+        ]
+
+        return {"streams": streams}
+
     except Exception as e:
         return {"error": str(e)}
 

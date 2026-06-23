@@ -1,0 +1,14 @@
+{
+  "logEvents": [
+    {"timestamp": 1782209000000, "message": "{\"level\":\"INFO\",\"service\":\"file-service\",\"message\":\"File upload service running.\"}"},
+    {"timestamp": 1782209010000, "message": "{\"level\":\"WARNING\",\"service\":\"system\",\"message\":\"Disk utilization reached 80%.\"}"},
+    {"timestamp": 1782209020000, "message": "{\"level\":\"WARNING\",\"service\":\"system\",\"message\":\"Disk utilization reached 90%.\"}"},
+    {"timestamp": 1782209030000, "message": "{\"level\":\"WARNING\",\"service\":\"system\",\"message\":\"Disk utilization reached 98%.\"}"},
+    {"timestamp": 1782209040000, "message": "{\"level\":\"ERROR\",\"service\":\"file-service\",\"message\":\"Failed to write uploaded file.\"}"},
+    {"timestamp": 1782209050000, "message": "{\"level\":\"ERROR\",\"service\":\"system\",\"message\":\"No space left on device.\"}"},
+    {"timestamp": 1782209060000, "message": "{\"level\":\"CRITICAL\",\"service\":\"file-service\",\"message\":\"Upload service unavailable.\"}"},
+    {"timestamp": 1782209200000, "message": "{\"level\":\"INFO\",\"service\":\"operations\",\"message\":\"Archived old log files.\"}"},
+    {"timestamp": 1782209210000, "message": "{\"level\":\"INFO\",\"service\":\"system\",\"message\":\"Disk utilization reduced to 65%.\"}"},
+    {"timestamp": 1782209220000, "message": "{\"level\":\"INFO\",\"service\":\"file-service\",\"message\":\"Service restored.\"}"}
+  ]
+}

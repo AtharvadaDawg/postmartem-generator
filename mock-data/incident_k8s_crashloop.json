@@ -1,0 +1,16 @@
+{
+  "logEvents": [
+    {"timestamp": 1782207000000, "message": "{\"level\":\"INFO\",\"service\":\"payment-api\",\"message\":\"New deployment started.\"}"},
+    {"timestamp": 1782207010000, "message": "{\"level\":\"INFO\",\"service\":\"payment-api\",\"message\":\"Container image pulled successfully.\"}"},
+    {"timestamp": 1782207020000, "message": "{\"level\":\"INFO\",\"service\":\"payment-api\",\"message\":\"Container starting.\"}"},
+    {"timestamp": 1782207030000, "message": "{\"level\":\"ERROR\",\"service\":\"payment-api\",\"message\":\"Missing REDIS_HOST environment variable.\"}"},
+    {"timestamp": 1782207040000, "message": "{\"level\":\"ERROR\",\"service\":\"payment-api\",\"message\":\"Application startup failed.\"}"},
+    {"timestamp": 1782207050000, "message": "{\"level\":\"WARNING\",\"service\":\"kubernetes\",\"message\":\"Pod terminated with exit code 1.\"}"},
+    {"timestamp": 1782207060000, "message": "{\"level\":\"WARNING\",\"service\":\"kubernetes\",\"message\":\"Restarting container.\"}"},
+    {"timestamp": 1782207070000, "message": "{\"level\":\"ERROR\",\"service\":\"payment-api\",\"message\":\"Application startup failed.\"}"},
+    {"timestamp": 1782207080000, "message": "{\"level\":\"WARNING\",\"service\":\"kubernetes\",\"message\":\"Pod restart count reached 5.\"}"},
+    {"timestamp": 1782207090000, "message": "{\"level\":\"CRITICAL\",\"service\":\"kubernetes\",\"message\":\"CrashLoopBackOff detected.\"}"},
+    {"timestamp": 1782207150000, "message": "{\"level\":\"INFO\",\"service\":\"operations\",\"message\":\"Deployment rolled back.\"}"},
+    {"timestamp": 1782207200000, "message": "{\"level\":\"INFO\",\"service\":\"payment-api\",\"message\":\"Stable version started successfully.\"}"}
+  ]
+}
